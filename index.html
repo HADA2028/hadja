@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Joyeux Anniversaire 💖 – SPA</title>
+  <meta name="description" content="Mini SPA : page d'anniversaire + cadeaux, musique continue, confettis, souvenirs, lettre, boîte et cartes cadeaux." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    :root{ --muted:#a1a1b3; --grad:linear-gradient(135deg,#ff4d6d 0%,#ff9a62 35%,#8c52ff 70%,#4cc9f0 100%); --card:#121224; --border:#2a2a3d; --bg1:#0f0f14; --bg2:#1b1b2b; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; color:#fff; font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:radial-gradient(60% 90% at 50% 0%, var(--bg2) 0%, var(--bg1) 60%, #0b0b10 100%)}
+    a{color:inherit; text-decoration:none}
+    .container{max-width:1100px; margin:0 auto; padding:24px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; flex-wrap:wrap}
+    .logo{font-weight:800; letter-spacing:.5px}
+    .badge{font-size:12px; color:var(--muted)}
+    .muted{color:var(--muted)}
+    .btn{cursor:pointer; padding:12px 18px; border-radius:14px; background:var(--grad); border:none; color:#0b0b10; font-weight:700; box-shadow:0 10px 30px rgba(255,77,109,.25); transition:transform .2s ease, box-shadow .2s ease}
+    .btn:hover{transform:translateY(-2px); box-shadow:0 18px 40px rgba(255,77,109,.35)}
+    .ghost{background:transparent; border:1px solid var(--border); color:#fff; box-shadow:none}
+    .panel{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:20px}
+    .section-title{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:8px 0 14px}
+    .ring{box-shadow:0 0 0 2px var(--border), 0 0 0 6px rgba(255,209,102,.12); border-radius:16px}
+    .hidden{display:none}
+    h1.title{font-family:'Great Vibes',cursive; font-size:56px; margin:6px 0 8px; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+    p{color:#d9d9e3}
+    /* Intro */
+    #introOverlay{position:fixed; inset:0; z-index:9999; display:grid; place-items:center; overflow:hidden; background:radial-gradient(60% 90% at 50% 0%, #18182a 0%, #0f0f14 60%, #0b0b10 100%), repeating-linear-gradient(135deg, rgba(255,255,255,.02) 0 2px, transparent 2px 8px)}
+    #introCard{position:relative; text-align:center; padding:32px 36px; border-radius:26px; border:1px solid var(--border); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); box-shadow:0 20px 60px rgba(0,0,0,.45)}
+    #introTitle{font-weight:800; letter-spacing:.6px; margin:0 0 10px; font-size:18px}
+    #introCount{font-family:'Great Vibes',cursive; font-size:96px; margin:6px 0 8px; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+    #introHint{color:var(--muted); font-size:14px; margin-bottom:8px}
+    .introHalo{position:absolute; inset:-2px; border-radius:28px; padding:2px; background:conic-gradient(from 0deg at 50% 50%, rgba(255,77,109,.35), rgba(140,82,255,.35), rgba(76,201,240,.35), rgba(255,154,98,.35), rgba(255,77,109,.35)); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; animation:spin 8s linear infinite}
+    @keyframes spin{to{transform:rotate(1turn)}}
+    @keyframes fall{ to { transform: translateY(110vh) translateX(var(--dx)); opacity:0; } }
+    /* Player */
+    .player{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+    .player .pill{padding:8px 12px; border:1px solid var(--border); border-radius:999px; background:#141423; font-size:12px}
+    .player button{height:40px; min-width:40px; border-radius:12px}
+    .player .title{font-size:13px; color:#d9d9e3}
+    /* Souvenir carousel */
+    .souvenir{--count:10; --panelW:min(48vw, 300px); --panelH:calc(var(--panelW) * 10 / 9); --radius:calc(var(--panelW) * 1.35); --speed:50s}
+    .souvenir .stage{perspective:1200px; margin:18px auto; width:var(--panelW); height:var(--panelH); position:relative}
+    .souvenir .carousel{position:relative; width:100%; height:100%; transform-style:preserve-3d; animation:souvenir-rotate var(--speed) linear infinite}
+    .souvenir .carousel:hover{animation-play-state:paused}
+    @keyframes souvenir-rotate{from{transform:rotateY(0)} to{transform:rotateY(360deg)}}
+    .souvenir .panel{position:absolute; inset:0; transform:rotateY(calc((360deg / var(--count)) * var(--i))) translateZ(var(--radius)); border-radius:16px; overflow:hidden; box-shadow:0 12px 30px rgba(0,0,0,.35), inset 0 0 1px rgba(255,255,255,.15)}
+    .souvenir .panel img{width:100%; height:100%; object-fit:cover; display:block}
+    .souvenir .emoji-heart{position:absolute; inset:0; display:grid; place-items:center; transform:translateZ(0); pointer-events:none}
+    .souvenir .heart-space{position:relative; width:clamp(180px,48%,260px); aspect-ratio:1/1}
+    .souvenir .emoji{position:absolute; top:50%; left:50%; font-size:1.6rem; transform:translate(-50%,-50%); offset-path:path("M 0,-80 C 0,-120 80,-120 80,-60 C 80,-20 40,0 0,40 C -40,0 -80,-20 -80,-60 C -80,-120 0,-120 0,-80 Z"); offset-rotate:0deg; offset-distance:var(--offset); animation:souvenir-float 4s ease-in-out infinite alternate}
+    @keyframes souvenir-float{from{transform:translate(-50%, -50%) scale(1) rotate(0deg)} 50%{transform:translate(-50%, -50%) scale(1.2) rotate(10deg)} to{transform:translate(-50%, -50%) scale(1) rotate(-10deg)}}
+    .btn-cadeaux{display:block; margin:30px auto; text-align:center}
+    /* Cadeaux view */
+    .stage{display:grid; place-items:center; min-height:48vh; position:relative}
+    .gift{position:relative; width:200px; height:160px; cursor:pointer; user-select:none; transform:translateY(10px)}
+    .gift .box{position:absolute; inset:40px 0 0 0; background:#d62839; border-radius:12px; box-shadow:inset 0 -6px rgba(0,0,0,.2), 0 10px 30px rgba(0,0,0,.35)}
+    .gift .stripe{position:absolute; inset:40px 80px 0 80px; background:linear-gradient(0deg, #ffd166, #ffd166); border-radius:6px}
+    .gift .lid{position:absolute; left:-10px; right:-10px; height:55px; top:0; background:#e63946; border-radius:12px; box-shadow:0 8px 18px rgba(0,0,0,.35); transform-origin:bottom left; transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+    .gift .bow{position:absolute; top:-16px; left:50%; transform:translateX(-50%); width:130px; height:34px}
+    .gift .bow::before,.gift .bow::after{content:""; position:absolute; top:0; width:56px; height:34px; border:6px solid #ffd166; border-radius:40px 40px 0 40px; transform-origin:bottom;}
+    .gift .bow::before{left:0; transform:rotate(20deg)}
+    .gift .bow::after{right:0; transform:scaleX(-1) rotate(20deg)}
+    .gift .knot{position:absolute; top:2px; left:50%; transform:translateX(-50%); width:24px; height:24px; background:#ffd166; border-radius:999px}
+    .cards{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-top:16px}
+    .card{position:relative; border:1px solid var(--border); border-radius:16px; overflow:hidden; background:#0f0f1c}
+    .card-header{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; cursor:pointer}
+    .card-label{font-weight:800; letter-spacing:.3px}
+    .tag{font-size:12px; padding:6px 10px; border-radius:999px; border:1px dashed #454565; background:#141423}
+    .tag.hidden{visibility:hidden}
+    .card-body{max-height:0; overflow:hidden; transition:max-height .5s ease, opacity .4s ease; opacity:0; padding:0 16px}
+    .card-body.open{opacity:1; padding:14px 16px}
+    .reveal{opacity:0; transform:translateY(30px) scale(.96); filter:blur(2px)}
+    .reveal.show{opacity:1; transform:translateY(0) scale(1); filter:none; transition:.7s cubic-bezier(.2,.8,.2,1)}
+  </style>
+</head>
+<body>
+  <!-- lecteur audio global (persiste entre vues) -->
+  <audio id="audio" preload="auto" playsinline>
+  <source id="audioSrc" src="" type="audio/mpeg">
+</audio>
+
+  <!-- ============ HOME VIEW ============ -->
+  <main id="view-home" class="container hidden" aria-hidden="true">
+    <header>
+      <div>
+        <div class="logo">🎂 Joyeux Anniversaire</div>
+        <div class="badge">Un petit site juste pour <span id="nameBadge">toi</span> ✨</div>
+      </div>
+      <div class="player">
+        <button class="btn ghost" id="prevBtn" aria-label="Piste précédente">⏮</button>
+        <button class="btn" id="playBtn" aria-label="Lecture/Pause">▶</button>
+        <button class="btn ghost" id="nextBtn" aria-label="Piste suivante">⏭</button>
+        <span class="pill title" id="currentTitle">Aucune piste</span>
+        <button class="btn ghost" id="confettiBtn">Confettis 🎉</button>
+      </div>
+    </header>
+
+    <section class="panel ring" style="margin-bottom:18px">
+      <p class="muted" style="margin:0">Message spécial</p>
+      <h1 class="title" id="dearName">Babe</h1>
+      <p>Que cette nouvelle année t'apporte tout ce que ton cœur désire : joie, réussite et beaucoup d'amour. Merci d'être là pour moi chaque jour. 💖</p>
+    </section>
+
+    <section class="panel souvenir" style="margin-bottom:18px">
+      <div class="section-title">
+        <h2>Souvenirs 📸</h2>
+        <span class="muted" style="font-size:13px">Carrousel 3D + cœur d’emojis</span>
+      </div>
+      <div class="stage">
+        <div class="carousel">
+          <figure class="panel" style="--i:0"><img src="images/img1.jpg" alt="Image 1"></figure>
+          <figure class="panel" style="--i:1"><img src="images/img2.jpg" alt="Image 2"></figure>
+          <figure class="panel" style="--i:2"><img src="images/img3.jpg" alt="Image 3"></figure>
+          <figure class="panel" style="--i:3"><img src="images/img4.jpg" alt="Image 4"></figure>
+          <figure class="panel" style="--i:4"><img src="images/img5.jpg" alt="Image 5"></figure>
+          <figure class="panel" style="--i:5"><img src="images/img6.jpg" alt="Image 6"></figure>
+          <figure class="panel" style="--i:6"><img src="images/img7.jpg" alt="Image 7"></figure>
+          <figure class="panel" style="--i:7"><img src="images/img8.jpg" alt="Image 8"></figure>
+          <figure class="panel" style="--i:8"><img src="images/img9.jpg" alt="Image 9"></figure>
+          <figure class="panel" style="--i:9"><img src="images/img10.jpg" alt="Image 10"></figure>
+          <div class="emoji-heart"><div class="heart-space" id="heartContainerSouvenir"></div></div>
+        </div>
+      </div>
+      <button class="btn ghost" id="toggleBtnSouvenir">Démarrer</button>
+    </section>
+
+    <section class="panel" style="margin-bottom:18px">
+      <div class="section-title">
+        <h2>Lettre pour toi 💌</h2>
+        <button class="btn ghost" id="revealBtn">Afficher / cacher</button>
+      </div>
+      <div id="letter">
+        <p>Mon amour,</p>
+        <p>Chaque jour à tes côtés est un cadeau. Tu rends tout plus simple, plus doux, plus beau. Merci d’être toi. En ce jour spécial, je te souhaite le plus tendre des anniversaires. Que tes rêves deviennent réels, et sache que je serai là pour les vivre avec toi.</p>
+        <p>Je t’aime. 💖</p>
+        <p class="muted">— Ton/ta <span id="signature">amoureux·se</span></p>
+      </div>
+    </section>
+
+    <button class="btn btn-cadeaux" id="btnCadeaux">Voir mes cadeaux 🎁</button>
+
+    <footer style="text-align:center; color:var(--muted); padding:18px 0">Fait avec ❤️ par <span id="from">toi</span>.</footer>
+  </main>
+
+  <!-- ============ CADEAUX VIEW ============ -->
+  <main id="view-cadeaux" class="container hidden" aria-hidden="true">
+    <header>
+      <div>
+        <div class="logo">🎁 Tes cadeaux</div>
+        <div class="muted" style="font-size:12px">Clique d'abord sur la boîte pour l'ouvrir ✨</div>
+      </div>
+      <a href="#/home" class="btn ghost">← Retour</a>
+    </header>
+
+    <section class="panel">
+      <div class="stage">
+        <div class="gift glow" id="giftBox" role="button" aria-label="Ouvrir la boîte cadeau" tabindex="0">
+          <div class="lid" id="giftLid"></div>
+          <div class="box"></div>
+          <div class="stripe"></div>
+          <div class="bow"></div>
+          <div class="knot"></div>
+        </div>
+        <div class="hint" id="giftHint">Clique pour ouvrir ✨</div>
+      </div>
+      <div id="cardsWrap" class="cards" aria-live="polite" aria-busy="true"></div>
+    </section>
+  </main>
+
+  <!-- Intro overlay (montrée seulement sur la route home au premier chargement) -->
+  <div id="introOverlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <div id="introCard" class="ring">
+      <div class="introHalo"></div>
+      <div id="introTitle">Prépare-toi… 🎉</div>
+      <div id="introCount" class="pulse">3</div>
+      <div id="introHint" class="muted">La surprise arrive dans <span id="introSec">3</span> seconde(s)</div>
+    </div>
+  </div>
+
+  <script>
+    // ================= Config (édite ici) =================
+    const CONFIG = {
+      name: "Hadja",
+      birthday: "2003-10-20",
+      signature: "amoureux",
+      pageTitle: "Joyeux Anniversaire 💖",
+      
+      playlist: [
+       { title: "Naza Happy Birthday", url: "audios/NAZA_HBD.mp3" },
+       { title: "MosesBliss For Life", url: "audios/MosesBliss_For_Life.mp3" },
+       { title: "Sindika x Maa Bio - ratatata", url: "audios/Sindika_x_Maa_Bio__ratatata.mp3"},
+       { title: "Benson Boone - Beautiful Things", url: "audios/Benson_Boone_Beautiful_Things.mp3"},
+       
+      ],
+      gifts: [
+        { id:'g1', label:'Cadeau 1', title:'Séjour surprise', emoji:'🏡', tag:'Voyage', body:"Un week-end magique dans un Airbnb choisi avec soin, rien que pour nous deux. Prépare-toi à te détendre et à profiter de chaque instant 💕." },
+        { id:'g2', label:'Cadeau 2', title:'Crédits Shein', emoji:'💳', tag:'Shopping', body:"Une carte cadeau de 100€ sur Shein pour te faire plaisir comme tu veux 👗✨." }
+]
+    };
+
+    // ================= Utils =================
+    const $ = (id)=> document.getElementById(id);
+    const bySel = (sel, p=document)=> p.querySelector(sel);
+    const safeText = (id, txt)=>{ const el=$(id); if(el) el.textContent=txt; };
+
+    // ================= Effects =================
+    function heartRain(){
+      for(let i=0;i<14;i++){
+        const h=document.createElement('div');
+        h.textContent=['💖','💗','💓','💞','💕'][Math.floor(Math.random()*5)];
+        const left=Math.random()*100; const dx=(Math.random()*2-1)*100+'px';
+        h.style.position='fixed'; h.style.top='-10px'; h.style.left=left+'vw';
+        h.style.fontSize='24px'; h.style.opacity='.9';
+        h.style.animation='fall 6s linear forwards';
+        h.style.setProperty('--dx', dx);
+        document.body.appendChild(h);
+        setTimeout(()=>h.remove(), 7000);
+      }
+    }
+    function confetti(){
+      const colors=['#ff4d6d','#ffd166','#8c52ff','#4cc9f0','#b2f7ef','#f72585'];
+      for(let i=0;i<120;i++){
+        const s=document.createElement('span');
+        s.style.position='fixed'; s.style.top='-10px'; s.style.left=(Math.random()*100)+'vw';
+        s.style.width=s.style.height=(6+Math.random()*8)+'px';
+        s.style.background=colors[Math.floor(Math.random()*colors.length)];
+        s.style.transform=`rotate(${Math.random()*360}deg)`; s.style.opacity='.9'; s.style.borderRadius='2px';
+        s.style.transition='transform 3s linear, top 3s linear, opacity .3s ease';
+        document.body.appendChild(s);
+        requestAnimationFrame(()=>{
+          s.style.top='110vh';
+          s.style.transform=`translateX(${(Math.random()*2-1)*120}px) rotate(${720*Math.random()}deg)`;
+        });
+        setTimeout(()=>s.remove(), 3200);
+      }
+    }
+
+    // ================= Player (global) =================
+    let audioEl, sourceEl, playBtn, prevBtn, nextBtn, titleEl; let playlistIndex=0; let userGestureUnlocked=false;
+    function setupPlayer(){
+      audioEl = $('audio'); sourceEl=$('audioSrc'); playBtn=$('playBtn'); prevBtn=$('prevBtn'); nextBtn=$('nextBtn'); titleEl=$('currentTitle');
+      if(!audioEl||!sourceEl) return;
+      loadTrack(0);
+      playBtn?.addEventListener('click', togglePlay);
+      prevBtn?.addEventListener('click', ()=>{ loadTrack(playlistIndex-1); playCurrent(); });
+      nextBtn?.addEventListener('click', ()=>{ loadTrack(playlistIndex+1); playCurrent(); });
+      audioEl.addEventListener('ended', ()=>{ loadTrack(playlistIndex+1); playCurrent(); });
+    }
+    function loadTrack(i){
+      if(!CONFIG.playlist || CONFIG.playlist.length===0){ if(titleEl) titleEl.textContent='Ajoute des pistes 🎵'; return; }
+      playlistIndex=(i+CONFIG.playlist.length)%CONFIG.playlist.length;
+      const t=CONFIG.playlist[playlistIndex];
+      if(titleEl) titleEl.textContent=t.title||`Piste ${playlistIndex+1}`;
+      sourceEl.src = t.url || '';
+      audioEl.src  = t.url || '';   // <-- important
+      audioEl.load();
+      try{ localStorage.setItem('musicUrl', sourceEl.src); }catch{}
+    }
+    function playCurrent(){
+      return audioEl.play().then(()=>{ if(playBtn) playBtn.textContent='⏸'; try{ localStorage.setItem('musicPlaying','true'); }catch{} }).catch(()=>{ showAutoplayHint(); });
+    }
+    function pauseCurrent(){ audioEl.pause(); if(playBtn) playBtn.textContent='▶'; try{ localStorage.setItem('musicPlaying','false'); }catch{} }
+    function togglePlay(){ if(audioEl.paused) playCurrent(); else pauseCurrent(); }
+    function showAutoplayHint(){ if(userGestureUnlocked) return; const hint=document.createElement('button'); hint.textContent='▶ Démarrer la musique'; hint.setAttribute('aria-label','Démarrer la musique'); Object.assign(hint.style,{position:'fixed',bottom:'16px',left:'50%',transform:'translateX(-50%)',padding:'10px 14px',borderRadius:'12px',border:'1px solid var(--border)',background:'#141423',color:'#fff',cursor:'pointer',boxShadow:'0 10px 30px rgba(0,0,0,.35)'}); document.body.appendChild(hint); const unlock=()=>{ userGestureUnlocked=true; togglePlay(); hint.remove(); document.removeEventListener('click', unlock); }; hint.addEventListener('click', unlock); document.addEventListener('click', unlock, { once:true }); }
+    // ================= Intro / Reveal =================
+
+    function secondsUntilNextBirthday(birthISO){
+  // birthISO: "YYYY-MM-DD" (ex: 2003-10-20)
+  try{
+    const [y,m,d] = birthISO.split('-').map(Number);
+    const now = new Date();
+    const year = now.getFullYear();
+    let target = new Date(year, m-1, d, 0, 0, 0, 0); // minuit local du 20/10
+    if (target - now <= 0) {
+      // si on est déjà le 20/10 (après minuit) ou si c’est passé -> année suivante
+      target = new Date(year + 1, m-1, d, 0, 0, 0, 0);
+    }
+    const diffSec = Math.max(0, Math.floor((target - now) / 1000));
+    return diffSec;
+  } catch {
+    return 3;
+  }
+}
+function formatCountdown(seconds){
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${d} j ${h} h ${m} min ${s} s`;
+}
+
+function getNextBirthdayDate(birthISO){
+  // birthISO: "YYYY-MM-DD" (ex: 2003-10-20)
+  try{
+    const [y,m,d] = birthISO.split('-').map(Number);
+    const now = new Date();
+    let target = new Date(now.getFullYear(), m-1, d, 0, 0, 0, 0);
+    if (target - now <= 0) { // si c'est passé aujourd'hui, viser l'an prochain
+      target = new Date(now.getFullYear()+1, m-1, d, 0, 0, 0, 0);
+    }
+    return target;
+  }catch{
+    // secours: 15s dans le futur
+    return new Date(Date.now() + 15000);
+  }
+}
+
+  function startIntroCountdown(seconds, targetDate){
+  const o = $('introOverlay');
+  const cEl = $('introCount'); // gros chiffre
+  const sEl = $('introSec');   // span dans le hint
+  if(!o || !cEl || !sEl){ revealHome(); return; }
+
+  let n = seconds;
+  cEl.textContent = formatCountdown(n);
+
+  const updateFmt = ()=>{
+    const remain = Math.max(0, Math.floor((targetDate - new Date())/1000));
+    sEl.textContent = String(n);
+  };
+
+  updateFmt(); // premier affichage
+  const timer = setInterval(()=>{
+    n -= 1;
+    updateFmt();
+    if(n <= 0){
+      clearInterval(timer);
+      revealHome();
+      return;
+    }
+    cEl.textContent = formatCountdown(n);
+  }, 1000);
+}
+
+    function revealHome(){ $('introOverlay')?.remove(); showView('home'); confetti(); heartRain(); playCurrent(); }
+
+    // ================= Router =================
+    function showView(name){
+      const views={ home:$('view-home'), cadeaux:$('view-cadeaux') };
+      Object.values(views).forEach(v=>{ if(!v) return; v.classList.add('hidden'); v.setAttribute('aria-hidden','true'); });
+      const el = views[name]; if(el){ el.classList.remove('hidden'); el.removeAttribute('aria-hidden'); }
+      if(name==='home'){ document.title = CONFIG.pageTitle; }
+      if(name==='cadeaux'){ document.title = 'Tes cadeaux 🎁'; initGiftsOnce(); }
+    }
+    function router(){ const hash=location.hash||'#/home'; if(hash.startsWith('#/cadeaux')) showView('cadeaux'); else showView('home'); }
+
+    // ================= Home extras =================
+    function initHomeInteractions(){
+      safeText('dearName', CONFIG.name); safeText('nameBadge', CONFIG.name); safeText('signature', CONFIG.signature); safeText('from', CONFIG.signature);
+      bySel('#revealBtn')?.addEventListener('click', ()=> $('letter').classList.toggle('hidden'));
+      $('confettiBtn')?.addEventListener('click', ()=>{ confetti(); heartRain(); });
+      $('btnCadeaux')?.addEventListener('click', ()=>{ confetti(); heartRain(); setTimeout(()=>{ location.hash = '#/cadeaux'; }, 800); });
+      // Souvenir emoji heart
+      (function(){ const emojiList=["🌸 🦋","🌺","🌹","🦋","💗","❤","😍","🥰","😘🫶🏾🥳","🥳","🫶🏾","💋","🫦","🫀","🫂💓","💃🏾","🌻","🩷","❤","🧡","💙","💜","❤‍🔥","💓","💘","💖"]; const n=20; const heart=document.getElementById('heartContainerSouvenir'); const btn=document.getElementById('toggleBtnSouvenir'); if(!heart||!btn) return; let mode='idle', i=0, timer=null; const R=2000; function render(e){ heart.innerHTML=''; for(let k=0;k<n;k++){ const d=document.createElement('div'); d.className='emoji'; d.textContent=e; d.style.setProperty('--offset', `${(k/n)*100}%`); heart.appendChild(d);} } function label(){ if(mode==='auto') btn.textContent='Emoji: '+emojiList[i]; else if(mode==='locked') btn.textContent='Verrouillé: '+emojiList[i]; else btn.textContent='Démarrer'; } function start(){ mode='auto'; render(emojiList[i]); label(); clearInterval(timer); timer=setInterval(()=>{ i=(i+1)%emojiList.length; render(emojiList[i]); label(); },R);} function lock(){ mode='locked'; clearInterval(timer); timer=null; label(); } function unlock(){ start(); } btn.addEventListener('click', ()=>{ if(mode==='idle') start(); else if(mode==='auto') lock(); else unlock(); }); render(emojiList[i]); label(); })();
+    }
+
+    // ================= Cadeaux view =================
+    let giftsInitialized=false; function initGiftsOnce(){ if(giftsInitialized) return; giftsInitialized=true; initGifts(); }
+    function initGifts(){
+      const box = bySel('#giftBox', $('view-cadeaux')); const lid=$('giftLid'); const hint=$('giftHint'); const wrap=$('cardsWrap'); let opened=false;
+      function buildCard(g, idx){ const card=document.createElement('article'); card.className='card reveal'; card.id=g.id; card.tabIndex=0; card.dataset.revealed='false'; const header=document.createElement('div'); header.className='card-header'; header.setAttribute('role','button'); header.setAttribute('aria-expanded','false'); header.setAttribute('aria-controls', g.id+'-body'); const titleDiv=document.createElement('div'); titleDiv.className='card-label'; titleDiv.textContent=`🎁 ${g.label}`; const tag=document.createElement('span'); tag.className='tag hidden'; tag.textContent=g.tag; header.append(titleDiv, tag); const body=document.createElement('div'); body.className='card-body'; body.id=g.id+'-body'; body.setAttribute('role','region'); body.setAttribute('aria-labelledby', g.id); body.innerHTML=`<p class="muted" style="margin:0 0 6px">${g.emoji} <strong>${g.title}</strong></p><p>${g.body}</p>`; function toggle(){ const isOpen=body.classList.contains('open'); header.setAttribute('aria-expanded', String(!isOpen)); if(!isOpen && card.dataset.revealed!=='true'){ titleDiv.textContent=`${g.emoji} ${g.title}`; tag.classList.remove('hidden'); card.dataset.revealed='true'; } if(!isOpen){ body.classList.add('open'); body.style.maxHeight = body.scrollHeight+'px'; } else { body.style.maxHeight = body.scrollHeight+'px'; requestAnimationFrame(()=>{ body.style.maxHeight='0px'; body.classList.remove('open'); }); } } header.addEventListener('click', toggle); card.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); }}); card.style.transitionDelay=(idx*140)+'ms'; card.append(header, body); return card; }
+      function populate(){ wrap.innerHTML=''; CONFIG.gifts.forEach((g,i)=> wrap.appendChild(buildCard(g,i))); requestAnimationFrame(()=>{ wrap.querySelectorAll('.reveal').forEach(el=> el.classList.add('show')); }); wrap.setAttribute('aria-busy','false'); }
+      function openBox(){ if(opened) return; opened=true; lid.style.transform='rotate(-25deg) translate(-8px, -6px)'; hint.textContent='Choisis un cadeau ✨'; confetti(); heartRain(); setTimeout(populate, 400); }
+      box?.addEventListener('click', openBox); box?.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openBox(); }});
+    }
+
+    // ================= Boot =================
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.title = CONFIG.pageTitle;
+  setupPlayer();
+  initHomeInteractions();
+  window.addEventListener('hashchange', router);
+
+  // Route initiale
+  if(!location.hash) location.hash = '#/home';
+  router();
+
+  // Intro basée sur la date d'anniversaire
+  if(location.hash.startsWith('#/home')){
+  const target = getNextBirthdayDate(CONFIG.birthday);
+  const fullSec = Math.max(0, Math.floor((target - new Date())/1000));
+  const introSec = Math.max(3, Math.min(36000, fullSec)); // overlay court, basé sur la vraie date
+
+  const hintEl = $('introHint');
+  if(hintEl){
+    hintEl.innerHTML = `La surprise arrive dans <span id="introSec">${formatCountdown(introSec)}</span> seconde(s)`;
+  }
+
+  // important: on passe targetDate pour mettre à jour le texte chaque seconde
+  startIntroCountdown(introSec, target);
+} else {
+  $('introOverlay')?.remove();
+}
+});
+
+
+    // ====== Mini tests ======
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const results=[], test=(n,f)=>{ try{ f(); results.push({test:n, ok:true}); }catch(e){ results.push({test:n, ok:false, error:e?.message||String(e)}); } };
+      test('borderRadius ok', ()=>{ const el=document.createElement('span'); el.style.borderRadius='2px'; if(el.style.borderRadius!=='2px') throw new Error('not set'); });
+      test('router views exist', ()=>{ if(!$('view-home')||!$('view-cadeaux')) throw new Error('views missing'); });
+      test('player exists', ()=>{ if(!document.querySelector('#audio')) throw new Error('audio missing'); });
+      try{ console.table(results); }catch{}
+      const badge=document.createElement('div'); Object.assign(badge.style,{position:'fixed',bottom:'10px',right:'10px',fontSize:'11px',padding:'6px 8px',border:'1px solid var(--border)',borderRadius:'8px',background:'#121224CC',color:'#c9c9d9'}); const failed=results.filter(r=>!r.ok).length; badge.textContent=failed===0?'Tests: OK':`Tests: ${failed} échec(s)`; badge.title='Ouvrez la console pour le détail des tests'; document.body.appendChild(badge); setTimeout(()=>badge.remove(), 3500);
+    });
+  </script>
+</body>
+</html>
